@@ -4,37 +4,44 @@ permissions:
   pull-requests: write
 
 on:
+  pull_request:
+    branches: [main]
   pull_request_target:
     branches: [main]
 
 jobs:
-  auto-assigner:
+  # -------------------------------------------------------
+  # 1. Privileged tasks (auto-assigner)
+  # -------------------------------------------------------
+  auto_assigner:
+    if: github.event_name == 'pull_request_target'
     runs-on: ubuntu-latest
+
     steps:
       - name: Auto-assign PR
         uses: toshimaru/auto-author-assign@v2.1.1
 
-      - name: Print workflow mode
-        run: echo "Running from base repo context main branch"
+      - name: Info
+        run: echo "Running privileged tasks from MAIN branch"
 
-  pre-commit:
+  # -------------------------------------------------------
+  # 2. CI tasks running from PR branch (tests, lint, etc.)
+  # -------------------------------------------------------
+  ci:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    needs: auto-assigner
+
     steps:
-      - name: Checkout PR code safely
+      - name: Checkout PR code
         uses: actions/checkout@v4
         with:
-          # Checkout the *fork's head* commit safely
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref:        ${{ github.event.pull_request.head.ref }}
-          persist-credentials: false
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      - name: Run pre-commit (or your CI)
+      - name: Run pre-commit or tests
         run: |
-          echo "Running CI on contributed code..."
+          echo "Running CI from PR branch (pull_request)"
           python --version
