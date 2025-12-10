@@ -49,6 +49,6 @@ jobs:
 
       - name: Run pre-commit
         run: |
-          echo "Running pre-commit checks..."
+          echo "Running pre-commit checks... as a maintainer"
           python --version
           # Add your actual pre-commit commands here
